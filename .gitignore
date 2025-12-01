@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+*.cover
+
+# Data files (stored on data branch)
+data/api/
+data/.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.log
+.env.local
+.env.*.local
+
+# Reference code (for development only)
+g0vse-reference/
+
+# Local development files (per CLAUDE.md guidelines)
+PROJECT.md
+SITEMAP.md
+backups/
+dev/
+
+# Downloaded data files (large)
+data/downloads/
