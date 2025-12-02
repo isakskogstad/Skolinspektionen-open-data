@@ -23,37 +23,43 @@ from .rate_limiter import extract_domain, get_rate_limiter
 logger = logging.getLogger(__name__)
 
 # Security: Allowed domains for downloads (SSRF protection)
-ALLOWED_DOMAINS = frozenset([
-    "skolinspektionen.se",
-    "www.skolinspektionen.se",
-])
+ALLOWED_DOMAINS = frozenset(
+    [
+        "skolinspektionen.se",
+        "www.skolinspektionen.se",
+    ]
+)
 
 # Security: Allowed download categories
-ALLOWED_CATEGORIES = frozenset([
-    "skolenkaten",
-    "tillstand",
-    "tillsyn",
-    "tillsyn/viten",
-    "tillsyn/tui",
-    "tillsyn/planerad_tillsyn",
-    "ombedomning",
-    "publications",
-])
+ALLOWED_CATEGORIES = frozenset(
+    [
+        "skolenkaten",
+        "tillstand",
+        "tillsyn",
+        "tillsyn/viten",
+        "tillsyn/tui",
+        "tillsyn/planerad_tillsyn",
+        "ombedomning",
+        "publications",
+    ]
+)
 
 # Security: Maximum file size (100 MB)
 MAX_FILE_SIZE = 100 * 1024 * 1024
 
 # Security: Allowed content types for downloads
-ALLOWED_CONTENT_TYPES = frozenset([
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
-    "application/vnd.ms-excel",  # .xls
-    "application/pdf",
-    "application/msword",  # .doc
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
-    "application/octet-stream",  # Generic binary (some servers use this)
-    "text/html",  # For web pages
-    "text/plain",  # For text files
-])
+ALLOWED_CONTENT_TYPES = frozenset(
+    [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
+        "application/vnd.ms-excel",  # .xls
+        "application/pdf",
+        "application/msword",  # .doc
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
+        "application/octet-stream",  # Generic binary (some servers use this)
+        "text/html",  # For web pages
+        "text/plain",  # For text files
+    ]
+)
 
 
 def validate_url(url: str, base_url: str) -> str:
@@ -156,7 +162,7 @@ def sanitize_filename(filename: str) -> str:
     # Limit length
     if len(filename) > 255:
         name, ext = os.path.splitext(filename)
-        filename = name[:255-len(ext)] + ext
+        filename = name[: 255 - len(ext)] + ext
 
     return filename
 
@@ -498,8 +504,8 @@ class DataFetcher:
         for year in TILLSTAND_URLS["years"]:
             # Try common patterns
             patterns = [
-                f"{base}{year}-skolstart-{year+1}-{str(year+2)[-2:]}/tillstandsbeslut-{year}.xlsx",
-                f"{base}{year}-skolstart-{year+1}-{str(year+2)[-2:]}/tillstandsbeslut-{year}-publicering.xlsx",
+                f"{base}{year}-skolstart-{year + 1}-{str(year + 2)[-2:]}/tillstandsbeslut-{year}.xlsx",
+                f"{base}{year}-skolstart-{year + 1}-{str(year + 2)[-2:]}/tillstandsbeslut-{year}-publicering.xlsx",
                 f"{base}{year}/tillstandsbeslut-{year}.xlsx",
             ]
 

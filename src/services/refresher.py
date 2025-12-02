@@ -8,29 +8,29 @@ Coordinates fetching, parsing, and storage of:
 - Kolada municipal statistics (API)
 """
 
-import asyncio
 import json
 import logging
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Optional
-from enum import Enum
 
 from pydantic import BaseModel, Field
 
 from ..config import get_settings
 from .fetcher import DataFetcher
+from .kolada import EDUCATION_KPIS, get_education_stats
 from .scraper import PublicationScraper
-from .skolenkaten import parse_skolenkaten_excel, discover_skolenkaten_files
-from .tillstand import parse_tillstand_excel, discover_tillstand_files
+from .skolenkaten import parse_skolenkaten_excel
+from .tillstand import parse_tillstand_excel
 from .tillsyn_statistik import load_all_tillsyn_statistik
-from .kolada import get_education_stats, EDUCATION_KPIS
 
 logger = logging.getLogger(__name__)
 
 
 class RefreshStatus(str, Enum):
     """Status of a refresh operation."""
+
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -40,6 +40,7 @@ class RefreshStatus(str, Enum):
 
 class SourceRefreshResult(BaseModel):
     """Result of refreshing a single data source."""
+
     source: str
     status: RefreshStatus
     items_fetched: int = 0
@@ -52,6 +53,7 @@ class SourceRefreshResult(BaseModel):
 
 class RefreshResult(BaseModel):
     """Result of a complete data refresh operation."""
+
     started_at: str
     completed_at: Optional[str] = None
     duration_seconds: Optional[float] = None
@@ -63,6 +65,7 @@ class RefreshResult(BaseModel):
 
 class RefreshState(BaseModel):
     """Persistent state for tracking refresh operations."""
+
     last_full_refresh: Optional[str] = None
     last_incremental_refresh: Optional[str] = None
     source_states: dict[str, dict] = Field(default_factory=dict)
@@ -230,9 +233,7 @@ class DataRefresher:
                 if download_dir.exists():
                     summary = load_all_tillsyn_statistik(download_dir)
                     result.items_parsed = (
-                        len(summary.viten) +
-                        len(summary.tui) +
-                        len(summary.planerad_tillsyn)
+                        len(summary.viten) + len(summary.tui) + len(summary.planerad_tillsyn)
                     )
 
                 result.status = RefreshStatus.SUCCESS
@@ -371,10 +372,7 @@ class DataRefresher:
         result.duration_seconds = (end - start).total_seconds()
 
         # Determine overall success
-        failed_sources = [
-            s for s, r in result.sources.items()
-            if r.status == RefreshStatus.FAILED
-        ]
+        failed_sources = [s for s, r in result.sources.items() if r.status == RefreshStatus.FAILED]
         result.success = len(failed_sources) == 0
 
         # Update state
@@ -392,12 +390,14 @@ class DataRefresher:
             }
 
         # Add to history (keep last 100)
-        self.state.refresh_history.append({
-            "timestamp": result.completed_at,
-            "sources": list(result.sources.keys()),
-            "success": result.success,
-            "duration": result.duration_seconds,
-        })
+        self.state.refresh_history.append(
+            {
+                "timestamp": result.completed_at,
+                "sources": list(result.sources.keys()),
+                "success": result.success,
+                "duration": result.duration_seconds,
+            }
+        )
         self.state.refresh_history = self.state.refresh_history[-100:]
 
         self._save_state()

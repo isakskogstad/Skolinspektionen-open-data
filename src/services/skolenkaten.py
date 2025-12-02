@@ -59,9 +59,7 @@ def parse_respondent_type(filename: str) -> tuple[str, str | None]:
         return "elever-grundskola-ak-5", "grundskola"
     elif "elever-grundskola-ak-8" in filename_lower or "elever-ak-8" in filename_lower:
         return "elever-grundskola-ak-8", "grundskola"
-    elif (
-        "elever-gymnasieskola-ar-2" in filename_lower or "elever-ar-2" in filename_lower
-    ):
+    elif "elever-gymnasieskola-ar-2" in filename_lower or "elever-ar-2" in filename_lower:
         return "elever-gymnasieskola-ar-2", "gymnasieskola"
     elif "larare-grundskola" in filename_lower:
         return "larare-grundskola", "grundskola"
@@ -71,7 +69,10 @@ def parse_respondent_type(filename: str) -> tuple[str, str | None]:
         return "larare-gymnasieskola", "gymnasieskola"
     elif "pedagogisk-personal-grundskola" in filename_lower:
         return "larare-grundskola", "grundskola"
-    elif "vardnadshavare-forskoleklass" in filename_lower or "vardnadshavare-fklass" in filename_lower:
+    elif (
+        "vardnadshavare-forskoleklass" in filename_lower
+        or "vardnadshavare-fklass" in filename_lower
+    ):
         return "vardnadshavare-forskoleklass", "forskoleklass"
     elif (
         "vardnadshavare-grundskola" in filename_lower
@@ -209,9 +210,7 @@ def safe_str(value) -> Optional[str]:
     return str(value)
 
 
-def parse_skolenkaten_excel(
-    file_path: Path, limit: Optional[int] = None
-) -> list[SkolenkatResult]:
+def parse_skolenkaten_excel(file_path: Path, limit: Optional[int] = None) -> list[SkolenkatResult]:
     """Parse a Skolenkäten Excel file and extract survey results.
 
     Args:
@@ -290,19 +289,13 @@ def parse_skolenkaten_excel(
                 index_stod=safe_float(row[INDEX_POSITIONS["stod"]])
                 if len(row) > INDEX_POSITIONS["stod"]
                 else None,
-                index_kritiskt_tankande=safe_float(
-                    row[INDEX_POSITIONS["kritiskt_tankande"]]
-                )
+                index_kritiskt_tankande=safe_float(row[INDEX_POSITIONS["kritiskt_tankande"]])
                 if len(row) > INDEX_POSITIONS["kritiskt_tankande"]
                 else None,
-                index_bemotande_larare=safe_float(
-                    row[INDEX_POSITIONS["bemotande_larare"]]
-                )
+                index_bemotande_larare=safe_float(row[INDEX_POSITIONS["bemotande_larare"]])
                 if len(row) > INDEX_POSITIONS["bemotande_larare"]
                 else None,
-                index_bemotande_elever=safe_float(
-                    row[INDEX_POSITIONS["bemotande_elever"]]
-                )
+                index_bemotande_elever=safe_float(row[INDEX_POSITIONS["bemotande_elever"]])
                 if len(row) > INDEX_POSITIONS["bemotande_elever"]
                 else None,
                 index_inflytande=safe_float(row[INDEX_POSITIONS["inflytande"]])
@@ -374,15 +367,9 @@ def create_summary(results: list[SkolenkatResult]) -> Optional[SkolenkatSummary]
         national_index_information=calc_avg([r.index_information for r in results]),
         national_index_stimulans=calc_avg([r.index_stimulans for r in results]),
         national_index_stod=calc_avg([r.index_stod for r in results]),
-        national_index_kritiskt_tankande=calc_avg(
-            [r.index_kritiskt_tankande for r in results]
-        ),
-        national_index_bemotande_larare=calc_avg(
-            [r.index_bemotande_larare for r in results]
-        ),
-        national_index_bemotande_elever=calc_avg(
-            [r.index_bemotande_elever for r in results]
-        ),
+        national_index_kritiskt_tankande=calc_avg([r.index_kritiskt_tankande for r in results]),
+        national_index_bemotande_larare=calc_avg([r.index_bemotande_larare for r in results]),
+        national_index_bemotande_elever=calc_avg([r.index_bemotande_elever for r in results]),
         national_index_inflytande=calc_avg([r.index_inflytande for r in results]),
         national_index_studiero=calc_avg([r.index_studiero for r in results]),
         national_index_trygghet=calc_avg([r.index_trygghet for r in results]),

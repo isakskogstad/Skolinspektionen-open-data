@@ -3,7 +3,6 @@
 import json
 from datetime import date
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from httpx import Response
@@ -81,7 +80,9 @@ class TestListPublicationTypes:
         assert len(PUBLICATION_TYPES) > 0
         assert "kvalitetsgranskning" in PUBLICATION_TYPES
         # Check actual types that exist
-        assert "regeringsrapporter" in PUBLICATION_TYPES or "ovriga-publikationer" in PUBLICATION_TYPES
+        assert (
+            "regeringsrapporter" in PUBLICATION_TYPES or "ovriga-publikationer" in PUBLICATION_TYPES
+        )
 
     def test_types_have_display_names(self):
         """Test that types have Swedish display names."""
@@ -255,9 +256,7 @@ class TestToolErrorHandling:
         from src.search.ranker import search_publications
 
         # Non-existent type should return empty
-        results = search_publications(
-            sample_publications, "", publication_type="nonexistent-type"
-        )
+        results = search_publications(sample_publications, "", publication_type="nonexistent-type")
         assert results == []
 
     def test_search_with_future_year(self, sample_publications: list[Publication]):

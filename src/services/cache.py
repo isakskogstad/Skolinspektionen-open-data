@@ -10,9 +10,9 @@ import json
 import time
 from collections import OrderedDict
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Generic
+from typing import Any, Generic, Optional, TypeVar
 
 import aiofiles
 import aiofiles.os
@@ -119,9 +119,7 @@ class LRUCache(Generic[T]):
     async def clear_expired(self) -> int:
         """Remove expired entries. Returns count of items removed."""
         async with self._lock:
-            expired_keys = [
-                key for key, entry in self._cache.items() if entry.is_expired
-            ]
+            expired_keys = [key for key, entry in self._cache.items() if entry.is_expired]
             for key in expired_keys:
                 del self._cache[key]
             return len(expired_keys)
@@ -282,7 +280,12 @@ class DiskCache:
     async def get_stats(self) -> dict:
         """Get disk cache statistics."""
         if not self.cache_dir.exists():
-            return {"size": 0, "total_bytes": 0, "entries": []}
+            return {
+                "size": 0,
+                "total_bytes": 0,
+                "cache_dir": str(self.cache_dir),
+                "entries": [],
+            }
 
         entries = []
         total_bytes = 0
@@ -296,13 +299,13 @@ class DiskCache:
                     content = await f.read()
                 data = json.loads(content)
 
-                entries.append({
-                    "key": data.get("key", "unknown"),
-                    "size_bytes": stat.st_size,
-                    "expires_at": datetime.fromtimestamp(
-                        data.get("expires_at", 0)
-                    ).isoformat(),
-                })
+                entries.append(
+                    {
+                        "key": data.get("key", "unknown"),
+                        "size_bytes": stat.st_size,
+                        "expires_at": datetime.fromtimestamp(data.get("expires_at", 0)).isoformat(),
+                    }
+                )
             except Exception:
                 pass
 
@@ -344,9 +347,7 @@ class ContentCache:
             default_ttl_hours: Default TTL in hours
         """
         settings = get_settings()
-        self.default_ttl_seconds = (
-            default_ttl_hours or settings.cache_ttl_hours
-        ) * 3600
+        self.default_ttl_seconds = (default_ttl_hours or settings.cache_ttl_hours) * 3600
 
         self._memory = LRUCache(memory_max_items or settings.cache_max_memory_items)
         self._disk = DiskCache(disk_cache_dir)

@@ -9,7 +9,7 @@ import random
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Optional, Set, Type, TypeVar
+from typing import Callable, Optional, Set, Type, TypeVar
 
 import httpx
 from rich.console import Console
@@ -59,9 +59,7 @@ class RetryConfig:
     backoff_factor: float = 2.0
     max_delay: float = 60.0
     jitter: bool = True
-    retryable_status_codes: Set[int] = field(
-        default_factory=lambda: RETRYABLE_STATUS_CODES.copy()
-    )
+    retryable_status_codes: Set[int] = field(default_factory=lambda: RETRYABLE_STATUS_CODES.copy())
 
     @classmethod
     def from_settings(cls) -> "RetryConfig":
@@ -137,9 +135,7 @@ class CircuitBreaker:
             console.print("[red]Circuit breaker: open (still failing)[/red]")
         elif self.failure_count >= self.config.failure_threshold:
             self.state = CircuitState.OPEN
-            console.print(
-                f"[red]Circuit breaker: open after {self.failure_count} failures[/red]"
-            )
+            console.print(f"[red]Circuit breaker: open after {self.failure_count} failures[/red]")
 
 
 class CircuitBreakerOpenError(Exception):
@@ -169,7 +165,7 @@ def calculate_delay(
     Returns:
         Delay in seconds
     """
-    delay = config.initial_delay * (config.backoff_factor ** attempt)
+    delay = config.initial_delay * (config.backoff_factor**attempt)
     delay = min(delay, config.max_delay)
 
     if config.jitter:
@@ -217,9 +213,7 @@ def with_retry(
         async def wrapper(*args, **kwargs) -> T:
             # Check circuit breaker
             if circuit_breaker and not circuit_breaker.can_execute():
-                raise CircuitBreakerOpenError(
-                    f"Circuit breaker is open for {func.__name__}"
-                )
+                raise CircuitBreakerOpenError(f"Circuit breaker is open for {func.__name__}")
 
             last_exception: Optional[Exception] = None
 
@@ -263,7 +257,7 @@ def with_retry(
                             last_exception=e,
                         ) from e
 
-                except Exception as e:
+                except Exception:
                     # Non-retryable exception
                     if circuit_breaker:
                         circuit_breaker.record_failure()

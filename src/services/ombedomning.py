@@ -29,7 +29,7 @@ OMBEDOMNING_REPORTS: list[OmbedomningRapport] = [
         filename="onp-omg10.pdf",
         url=f"{BASE_URL}/globalassets/02-beslut-rapporter-stat/granskningsrapporter/regeringsrapporter/redovisning-av-regeringsuppdrag/2019/onp-omg10.pdf",
         description="Slutrapport för omgång 10 av ombedömning av nationella prov. "
-                    "Fortsatt stora skillnader i bedömning mellan lärare och externa bedömare.",
+        "Fortsatt stora skillnader i bedömning mellan lärare och externa bedömare.",
         subjects=["Svenska", "Engelska", "Matematik", "NO", "SO"],
         grades=["åk 3", "åk 6", "åk 9", "gymnasiet"],
     ),
@@ -41,7 +41,7 @@ OMBEDOMNING_REPORTS: list[OmbedomningRapport] = [
         filename="ombedomning-av-nationella-prov-2017-fortsatt-stora-skillnader.pdf",
         url=f"{BASE_URL}/globalassets/02-beslut-rapporter-stat/granskningsrapporter/regeringsrapporter/redovisning-av-regeringsuppdrag/2018/ombedomning-av-nationella-prov-2017-fortsatt-stora-skillnader.pdf",
         description="Rapport som visar att betydande skillnader kvarstår i hur lärare "
-                    "bedömer nationella prov jämfört med externa bedömare.",
+        "bedömer nationella prov jämfört med externa bedömare.",
         subjects=["Svenska", "Engelska", "Matematik"],
         grades=["åk 3", "åk 6", "åk 9", "gymnasiet"],
     ),
@@ -53,7 +53,7 @@ OMBEDOMNING_REPORTS: list[OmbedomningRapport] = [
         filename="ombedomning_nationellaprov_omg8_slutgiltig.pdf",
         url=f"{BASE_URL}/globalassets/02-beslut-rapporter-stat/granskningsrapporter/regeringsrapporter/redovisning-av-regeringsuppdrag/2017/ombedomning_nationellaprov_omg8_slutgiltig.pdf",
         description="Slutrapport för omgång 8. Visar fortsatta brister i likvärdighet "
-                    "vid bedömning av nationella prov.",
+        "vid bedömning av nationella prov.",
         subjects=["Svenska", "Engelska", "Matematik"],
         grades=["åk 3", "åk 6", "åk 9", "gymnasiet"],
     ),
@@ -76,7 +76,7 @@ OMBEDOMNING_REPORTS: list[OmbedomningRapport] = [
         filename="slutrapport_ombedomning_nationella_prov_2014_151116.pdf",
         url=f"{BASE_URL}/globalassets/02-beslut-rapporter-stat/granskningsrapporter/regeringsrapporter/redovisning-av-regeringsuppdrag/2015/slutrapport_ombedomning_nationella_prov_2014_151116.pdf",
         description="Slutrapport för ombedömning av nationella prov 2014. "
-                    "Sammanfattar resultat från omgång 6.",
+        "Sammanfattar resultat från omgång 6.",
         subjects=["Svenska", "Engelska", "Matematik"],
         grades=["åk 3", "åk 6", "åk 9", "gymnasiet"],
     ),
@@ -88,7 +88,7 @@ OMBEDOMNING_REPORTS: list[OmbedomningRapport] = [
         filename="omrattning-nationella-prov-2013.pdf",
         url=f"{BASE_URL}/globalassets/02-beslut-rapporter-stat/granskningsrapporter/regeringsrapporter/redovisning-av-regeringsuppdrag/2013/omrattning-nationella-prov-2013.pdf",
         description="Rapport om omrättning av nationella prov 2013. "
-                    "Visar systematiska skillnader i bedömning.",
+        "Visar systematiska skillnader i bedömning.",
         subjects=["Svenska", "Engelska", "Matematik"],
         grades=["åk 3", "åk 6", "åk 9"],
     ),
@@ -100,7 +100,7 @@ OMBEDOMNING_REPORTS: list[OmbedomningRapport] = [
         filename="omratt2011-slutrapport.pdf",
         url=f"{BASE_URL}/globalassets/02-beslut-rapporter-stat/granskningsrapporter/ovriga-publikationer/2011/omrattning/omratt2011-slutrapport.pdf",
         description="Första omgången av systematisk omrättning av nationella prov. "
-                    "Grundlade metodiken för framtida ombedömningar.",
+        "Grundlade metodiken för framtida ombedömningar.",
         subjects=["Svenska", "Matematik"],
         grades=["åk 3", "åk 9"],
     ),

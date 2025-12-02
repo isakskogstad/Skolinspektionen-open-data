@@ -1,19 +1,12 @@
 """Test that all modules can be imported."""
 
-import pytest
-
 
 def test_import_models():
     """Test that models can be imported."""
     from src.services.models import (
-        Publication,
-        PressRelease,
-        Decision,
-        Index,
-        StatisticsFile,
-        Attachment,
         PUBLICATION_TYPES,
         THEMES,
+        Publication,
     )
 
     assert Publication is not None

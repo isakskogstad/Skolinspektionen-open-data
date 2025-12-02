@@ -1,16 +1,13 @@
 """Pytest configuration and fixtures for Skolinspektionen DATA tests."""
 
-import asyncio
 import json
 import tempfile
 from datetime import date, datetime
 from pathlib import Path
 from typing import Generator
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import respx
-from httpx import Response
 
 from src.config import Settings, reset_settings
 from src.services.cache import reset_content_cache

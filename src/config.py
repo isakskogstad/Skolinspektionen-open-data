@@ -28,8 +28,7 @@ class Settings(BaseSettings):
     # HTTP settings
     http_timeout: float = 30.0
     user_agent: str = (
-        "SkolinspektionenData/0.1 "
-        "(https://github.com/civictechsweden/skolinspektionen-data)"
+        "SkolinspektionenData/0.1 (https://github.com/civictechsweden/skolinspektionen-data)"
     )
 
     # Rate limiting

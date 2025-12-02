@@ -11,9 +11,7 @@ from src.services.delta import (
     UpdateMetadata,
     calculate_items_to_fetch,
     days_since,
-    load_update_metadata,
     merge_items,
-    save_update_metadata,
 )
 
 
@@ -28,7 +26,7 @@ class TestCalculateItemsToFetch:
             days_since_update=0,
         )
         assert result.items_to_fetch == 100
-        assert result.is_full_scrape == True
+        assert result.is_full_scrape
 
     def test_new_items_detected(self):
         """Test fetching when new items detected."""
@@ -48,7 +46,7 @@ class TestCalculateItemsToFetch:
             saved_count=100,
             days_since_update=1,
         )
-        assert result.is_full_scrape == True
+        assert result.is_full_scrape
         assert "removed" in result.reason
 
     def test_stale_data_triggers_full_scrape(self):
@@ -58,7 +56,7 @@ class TestCalculateItemsToFetch:
             saved_count=100,
             days_since_update=35,  # > 30 days
         )
-        assert result.is_full_scrape == True
+        assert result.is_full_scrape
         assert "stale" in result.reason
 
     def test_incremental_update(self):
@@ -85,7 +83,7 @@ class TestDeltaResult:
         )
         assert result.items_to_fetch == 10
         assert result.reason == "test reason"
-        assert result.is_full_scrape == False
+        assert not result.is_full_scrape
         assert result.new_items_estimate == 5
 
     def test_description_property(self):
@@ -156,7 +154,7 @@ class TestDeltaTracker:
         """Test delta calculation with no previous metadata."""
         await tracker.load()
         result = tracker.calculate_delta("publications", online_count=50)
-        assert result.is_full_scrape == True
+        assert result.is_full_scrape
         assert result.items_to_fetch == 50
 
     @pytest.mark.asyncio

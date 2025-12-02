@@ -8,10 +8,12 @@ from typing import Any, Optional
 from urllib.parse import urlparse
 
 # Allowed domains for URL inputs
-ALLOWED_URL_DOMAINS = frozenset([
-    "skolinspektionen.se",
-    "www.skolinspektionen.se",
-])
+ALLOWED_URL_DOMAINS = frozenset(
+    [
+        "skolinspektionen.se",
+        "www.skolinspektionen.se",
+    ]
+)
 
 # Maximum string lengths
 MAX_QUERY_LENGTH = 1000

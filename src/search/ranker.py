@@ -5,7 +5,7 @@ with support for exact matches, relevance ranking, and typo tolerance.
 """
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Optional, Sequence, TypeVar
 
 from rank_bm25 import BM25Okapi
@@ -85,11 +85,49 @@ def tokenize_swedish(text: str) -> list[str]:
 
     # Swedish stop words (common words with low search value)
     stop_words = {
-        "och", "i", "att", "en", "ett", "det", "som", "på", "är", "av",
-        "för", "med", "den", "till", "har", "de", "inte", "om", "vi",
-        "ska", "kan", "från", "eller", "hos", "vid", "så", "även",
-        "efter", "utan", "mot", "under", "vara", "bli", "blev", "sina",
-        "sin", "sitt", "denna", "detta", "dessa", "där", "här", "var",
+        "och",
+        "i",
+        "att",
+        "en",
+        "ett",
+        "det",
+        "som",
+        "på",
+        "är",
+        "av",
+        "för",
+        "med",
+        "den",
+        "till",
+        "har",
+        "de",
+        "inte",
+        "om",
+        "vi",
+        "ska",
+        "kan",
+        "från",
+        "eller",
+        "hos",
+        "vid",
+        "så",
+        "även",
+        "efter",
+        "utan",
+        "mot",
+        "under",
+        "vara",
+        "bli",
+        "blev",
+        "sina",
+        "sin",
+        "sitt",
+        "denna",
+        "detta",
+        "dessa",
+        "där",
+        "här",
+        "var",
     }
 
     tokens = [t for t in tokens if t not in stop_words]
@@ -154,12 +192,8 @@ class SearchRanker:
 
         # Secondary text if provided
         if self.get_secondary_text:
-            self.secondary_texts = [
-                self.get_secondary_text(item) or "" for item in self.items
-            ]
-            self.secondary_tokenized = [
-                tokenize_swedish(text) for text in self.secondary_texts
-            ]
+            self.secondary_texts = [self.get_secondary_text(item) or "" for item in self.items]
+            self.secondary_tokenized = [tokenize_swedish(text) for text in self.secondary_texts]
         else:
             self.secondary_texts = None
             self.secondary_tokenized = None
@@ -241,7 +275,7 @@ class SearchRanker:
         for idx, text in enumerate(self.texts_lower):
             if query_lower in text:
                 # Higher score for title matches, position-based scoring
-                position = text.find(query_lower)
+                text.find(query_lower)
                 length_ratio = len(query_lower) / max(len(text), 1)
 
                 # Score based on match quality
@@ -367,8 +401,7 @@ def search_publications(
         filtered = [
             p
             for p in filtered
-            if getattr(p, "published", None)
-            and getattr(p.published, "year", None) == year
+            if getattr(p, "published", None) and getattr(p.published, "year", None) == year
         ]
 
     if not filtered:
@@ -407,8 +440,7 @@ def search_press_releases(
         filtered = [
             r
             for r in filtered
-            if getattr(r, "published", None)
-            and getattr(r.published, "year", None) == year
+            if getattr(r, "published", None) and getattr(r.published, "year", None) == year
         ]
 
     if not filtered:

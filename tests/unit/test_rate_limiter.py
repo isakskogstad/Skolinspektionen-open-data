@@ -8,9 +8,9 @@ import pytest
 from src.services.rate_limiter import (
     RateLimiter,
     TokenBucket,
+    extract_domain,
     get_rate_limiter,
     reset_rate_limiter,
-    extract_domain,
 )
 
 
@@ -149,7 +149,7 @@ class TestGetRateLimiter:
 
     def test_reset(self):
         """Test that reset_rate_limiter works."""
-        limiter1 = get_rate_limiter()
+        get_rate_limiter()
         reset_rate_limiter()
         limiter2 = get_rate_limiter()
         assert limiter2 is not None
@@ -185,7 +185,7 @@ class TestConcurrentAccess:
 
         # Make 10 concurrent requests
         start = time.time()
-        timestamps = await asyncio.gather(*[make_request() for _ in range(10)])
+        await asyncio.gather(*[make_request() for _ in range(10)])
         end = time.time()
 
         # First 5 should complete immediately (capacity)

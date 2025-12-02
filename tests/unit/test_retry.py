@@ -1,8 +1,6 @@
 """Tests for retry module."""
 
-import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -29,7 +27,7 @@ class TestRetryConfig:
         assert config.initial_delay == 1.0
         assert config.max_delay == 60.0
         assert config.backoff_factor == 2.0
-        assert config.jitter == True
+        assert config.jitter
 
     def test_custom_config(self):
         """Test custom retry configuration."""
@@ -44,7 +42,7 @@ class TestRetryConfig:
         assert config.initial_delay == 0.5
         assert config.max_delay == 30.0
         assert config.backoff_factor == 3.0
-        assert config.jitter == False
+        assert not config.jitter
 
 
 class TestCalculateDelay:
@@ -66,9 +64,7 @@ class TestCalculateDelay:
 
     def test_max_delay_cap(self):
         """Test delay is capped at max_delay."""
-        config = RetryConfig(
-            initial_delay=1.0, backoff_factor=10.0, max_delay=5.0, jitter=False
-        )
+        config = RetryConfig(initial_delay=1.0, backoff_factor=10.0, max_delay=5.0, jitter=False)
         delay = calculate_delay(5, config)
         assert delay == 5.0
 
@@ -86,17 +82,17 @@ class TestIsRetryableException:
     def test_timeout_is_retryable(self):
         """Test timeout exception is retryable."""
         exc = httpx.TimeoutException("timeout")
-        assert is_retryable_exception(exc) == True
+        assert is_retryable_exception(exc)
 
     def test_connect_error_is_retryable(self):
         """Test connect error is retryable."""
         exc = httpx.ConnectError("connection failed")
-        assert is_retryable_exception(exc) == True
+        assert is_retryable_exception(exc)
 
     def test_value_error_not_retryable(self):
         """Test ValueError is not retryable."""
         exc = ValueError("invalid")
-        assert is_retryable_exception(exc) == False
+        assert not is_retryable_exception(exc)
 
 
 class TestWithRetry:
@@ -195,7 +191,7 @@ class TestCircuitBreaker:
     def test_initial_state(self, breaker: CircuitBreaker):
         """Test initial state is closed."""
         assert breaker.state == CircuitState.CLOSED
-        assert breaker.can_execute() == True
+        assert breaker.can_execute()
 
     def test_failures_open_circuit(self, breaker: CircuitBreaker):
         """Test that failures open the circuit."""
@@ -205,7 +201,7 @@ class TestCircuitBreaker:
 
         breaker.record_failure()
         assert breaker.state == CircuitState.OPEN
-        assert breaker.can_execute() == False
+        assert not breaker.can_execute()
 
     def test_success_resets_failures(self, breaker: CircuitBreaker):
         """Test that success resets failure count."""
@@ -230,7 +226,7 @@ class TestCircuitBreaker:
         time.sleep(0.15)
 
         # Should allow one request (half-open)
-        assert breaker.can_execute() == True
+        assert breaker.can_execute()
         assert breaker.state == CircuitState.HALF_OPEN
 
     def test_half_open_success_closes(self, breaker: CircuitBreaker):

@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Optional
 
 from .models import (
-    ViteStatistik,
-    TUIStatistik,
     PlaneradTillsynStatistik,
     TillsynStatistikSummary,
+    TUIStatistik,
+    ViteStatistik,
 )
 
 logger = logging.getLogger(__name__)
@@ -442,9 +442,7 @@ def load_all_tillsyn_statistik(base_path: Path) -> TillsynStatistikSummary:
     return summary
 
 
-def get_viten_by_year(
-    data: list[ViteStatistik], year: Optional[int] = None
-) -> list[ViteStatistik]:
+def get_viten_by_year(data: list[ViteStatistik], year: Optional[int] = None) -> list[ViteStatistik]:
     """Filter Viten statistics by year.
 
     Args:
@@ -459,9 +457,7 @@ def get_viten_by_year(
     return data
 
 
-def get_tui_by_year(
-    data: list[TUIStatistik], year: Optional[int] = None
-) -> list[TUIStatistik]:
+def get_tui_by_year(data: list[TUIStatistik], year: Optional[int] = None) -> list[TUIStatistik]:
     """Filter TUI statistics by year.
 
     Args:

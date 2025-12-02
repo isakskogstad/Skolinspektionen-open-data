@@ -122,9 +122,7 @@ def safe_str(value) -> Optional[str]:
     return str(value)
 
 
-def parse_tillstand_excel(
-    file_path: Path, limit: Optional[int] = None
-) -> list[TillstandBeslut]:
+def parse_tillstand_excel(file_path: Path, limit: Optional[int] = None) -> list[TillstandBeslut]:
     """Parse a Tillståndsbeslut Excel file and extract permit decisions.
 
     Args:
@@ -209,7 +207,9 @@ def parse_tillstand_excel(
         beslut_ak7 = safe_str(row[COL_AK7]) if len(row) > COL_AK7 else None
         beslut_ak8 = safe_str(row[COL_AK8]) if len(row) > COL_AK8 else None
         beslut_ak9 = safe_str(row[COL_AK9]) if len(row) > COL_AK9 else None
-        beslut_forskoleklass = safe_str(row[COL_FORSKOLEKLASS]) if len(row) > COL_FORSKOLEKLASS else None
+        beslut_forskoleklass = (
+            safe_str(row[COL_FORSKOLEKLASS]) if len(row) > COL_FORSKOLEKLASS else None
+        )
         beslut_fritidshem = safe_str(row[COL_FRITIDSHEM]) if len(row) > COL_FRITIDSHEM else None
 
         # Parse gymnasieskola program decisions
@@ -289,9 +289,7 @@ def create_summary(results: list[TillstandBeslut]) -> Optional[TillstandSummary]
     nyetableringar_godkanda = sum(
         1 for r in nyetableringar if "godkännande" in r.beslutstyp.lower()
     )
-    utokningar_godkanda = sum(
-        1 for r in utokningar if "godkännande" in r.beslutstyp.lower()
-    )
+    utokningar_godkanda = sum(1 for r in utokningar if "godkännande" in r.beslutstyp.lower())
 
     # Count by school form
     by_skolform: dict[str, dict[str, int]] = {}
@@ -382,7 +380,8 @@ def search_tillstand(
     if query:
         query_lower = query.lower()
         filtered = [
-            r for r in filtered
+            r
+            for r in filtered
             if query_lower in r.skola.lower() or query_lower in r.sokande.lower()
         ]
 

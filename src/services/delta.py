@@ -6,7 +6,7 @@ to minimize server load and scraping time.
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
@@ -209,6 +209,7 @@ def days_since(dt: datetime) -> int:
         now = datetime.now()
     else:
         from datetime import timezone
+
         now = datetime.now(timezone.utc)
 
     delta = now - dt

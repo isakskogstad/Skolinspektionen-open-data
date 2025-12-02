@@ -3,8 +3,8 @@
 from .ranker import (
     SearchRanker,
     SearchResult,
-    search_publications,
     search_press_releases,
+    search_publications,
 )
 
 __all__ = [
