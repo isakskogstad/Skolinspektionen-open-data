@@ -4,8 +4,6 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from src.config import Settings, get_settings, reset_settings
 
 
@@ -82,7 +80,7 @@ class TestGetSettings:
 
     def test_reset_settings(self):
         """Test that reset_settings clears the singleton."""
-        settings1 = get_settings()
+        get_settings()
         reset_settings()
         settings2 = get_settings()
         # After reset, should be a new instance

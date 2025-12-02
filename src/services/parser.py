@@ -9,17 +9,19 @@ from bs4 import BeautifulSoup
 from markdownify import markdownify as md
 from rich.console import Console
 
-from .models import Publication, Attachment
+from .models import Attachment, Publication
 
 console = Console()
 
 BASE_URL = "https://www.skolinspektionen.se"
 
 # Security: Allowed domains for content fetching (SSRF protection)
-ALLOWED_DOMAINS = frozenset([
-    "skolinspektionen.se",
-    "www.skolinspektionen.se",
-])
+ALLOWED_DOMAINS = frozenset(
+    [
+        "skolinspektionen.se",
+        "www.skolinspektionen.se",
+    ]
+)
 
 
 def validate_url(url: str) -> str:

@@ -7,6 +7,7 @@ Skolinspektionen inspection data.
 
 import logging
 from typing import Optional
+
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -57,11 +58,13 @@ async def search_municipalities(query: str, limit: int = 10) -> list[dict]:
 
         results = []
         for m in data.get("values", [])[:limit]:
-            results.append({
-                "id": m["id"],
-                "title": m["title"],
-                "type": m.get("type", "K"),  # K=kommun, L=landsting
-            })
+            results.append(
+                {
+                    "id": m["id"],
+                    "title": m["title"],
+                    "type": m.get("type", "K"),  # K=kommun, L=landsting
+                }
+            )
         return results
 
 
@@ -115,11 +118,13 @@ async def get_kpi_data(
         for item in data.get("values", []):
             for val in item.get("values", []):
                 if val.get("value") is not None:
-                    results.append({
-                        "period": item.get("period"),
-                        "value": val.get("value"),
-                        "gender": val.get("gender", "T"),  # T=total
-                    })
+                    results.append(
+                        {
+                            "period": item.get("period"),
+                            "value": val.get("value"),
+                            "gender": val.get("gender", "T"),  # T=total
+                        }
+                    )
         return results
 
 
@@ -211,14 +216,16 @@ async def compare_municipalities(
                     for item in data.get("values", []):
                         for val in item.get("values", []):
                             if val.get("value") is not None and val.get("gender") == "T":
-                                results.append({
-                                    "municipality_id": muni_id,
-                                    "municipality_name": muni_name,
-                                    "kpi_id": kpi_id,
-                                    "kpi_title": EDUCATION_KPIS.get(kpi_id, kpi_id),
-                                    "value": val["value"],
-                                    "period": item.get("period"),
-                                })
+                                results.append(
+                                    {
+                                        "municipality_id": muni_id,
+                                        "municipality_name": muni_name,
+                                        "kpi_id": kpi_id,
+                                        "kpi_title": EDUCATION_KPIS.get(kpi_id, kpi_id),
+                                        "value": val["value"],
+                                        "period": item.get("period"),
+                                    }
+                                )
                                 break
             except Exception as e:
                 logger.debug(f"Failed to fetch data for {muni_id}: {e}")

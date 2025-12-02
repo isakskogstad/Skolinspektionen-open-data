@@ -15,86 +15,82 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import (
-    Tool,
-    TextContent,
     GetPromptResult,
     Prompt,
-    PromptMessage,
     PromptArgument,
+    PromptMessage,
     Resource,
+    TextContent,
+    Tool,
 )
 
+from mcp.server import Server
+
 from ..config import get_settings
-from ..search.ranker import search_publications, search_press_releases, SearchResult
+from ..search.ranker import SearchResult, search_press_releases, search_publications
 from ..services.cache import get_content_cache
+from ..services.kolada import (
+    EDUCATION_KPIS,
+    compare_municipalities,
+    get_education_stats,
+    get_municipality,
+    list_education_kpis,
+    search_municipalities,
+)
 from ..services.models import (
-    Index,
-    Publication,
+    DECISION_TYPES,
     PUBLICATION_TYPES,
-    THEMES,
+    REGIONS,
+    SKOLENKATEN_INDEX,
+    SKOLENKATEN_RESPONDENT_TYPES,
     SKOLFORMER,
     SUBJECTS,
-    DECISION_TYPES,
-    REGIONS,
-    TERMINER,
-    YEAR_RANGE,
-    SKOLENKATEN_RESPONDENT_TYPES,
-    SKOLENKATEN_INDEX,
-    TILLSTAND_BESLUT_TYPES,
+    THEMES,
     TILLSTAND_ANSOKNINGSTYPER,
+    TILLSTAND_BESLUT_TYPES,
     TILLSTAND_SKOLFORMER,
-)
-from ..services.parser import ContentParser
-from ..services.scraper import PublicationScraper
-from ..services.skolenkaten import (
-    parse_skolenkaten_excel,
-    create_summary,
-    discover_skolenkaten_files,
-    search_schools_in_results,
-)
-from ..services.kolada import (
-    search_municipalities,
-    get_municipality,
-    get_education_stats,
-    compare_municipalities,
-    list_education_kpis,
-    EDUCATION_KPIS,
-)
-from ..services.tillstand import (
-    parse_tillstand_excel,
-    create_summary as create_tillstand_summary,
-    discover_tillstand_files,
-    search_tillstand,
-)
-from ..services.tillsyn_statistik import (
-    parse_viten_excel,
-    parse_tui_excel,
-    parse_planerad_tillsyn_excel,
-    load_all_tillsyn_statistik,
-    discover_tillsyn_files,
+    TILLSYN_CATEGORIES,
+    TUI_ASSESSMENT_AREAS,
+    YEAR_RANGE,
+    Index,
 )
 from ..services.ombedomning import (
     get_all_reports as get_ombedomning_reports,
+)
+from ..services.ombedomning import (
     get_report_by_year as get_ombedomning_by_year,
-    get_latest_report as get_latest_ombedomning,
+)
+from ..services.ombedomning import (
     get_summary as get_ombedomning_summary,
 )
+from ..services.parser import ContentParser
 from ..services.refresher import DataRefresher, run_refresh
-from ..services.models import (
-    TILLSYN_CATEGORIES,
-    TUI_ASSESSMENT_AREAS,
+from ..services.scraper import PublicationScraper
+from ..services.skolenkaten import (
+    create_summary,
+    discover_skolenkaten_files,
+    parse_skolenkaten_excel,
+    search_schools_in_results,
+)
+from ..services.tillstand import (
+    create_summary as create_tillstand_summary,
+)
+from ..services.tillstand import (
+    discover_tillstand_files,
+    parse_tillstand_excel,
+    search_tillstand,
+)
+from ..services.tillsyn_statistik import (
+    load_all_tillsyn_statistik,
 )
 from .validation import (
-    validate_string,
-    validate_int,
-    validate_limit,
-    validate_year,
-    validate_url,
     validate_enum,
-    validate_bool,
+    validate_limit,
+    validate_string,
+    validate_url,
+    validate_year,
 )
 
 # Initialize server
@@ -655,8 +651,8 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="get_ombedomning_reports",
             description="Get all available reports on ombedömning (re-evaluation) of national tests. "
-                        "These reports analyze consistency in grading across schools. "
-                        "Note: Data is only available as PDF reports, not structured data.",
+            "These reports analyze consistency in grading across schools. "
+            "Note: Data is only available as PDF reports, not structured data.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -670,7 +666,7 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="get_ombedomning_summary",
             description="Get a summary of all available ombedömning nationella prov reports, "
-                        "including years covered, subjects tested, and the latest report.",
+            "including years covered, subjects tested, and the latest report.",
             inputSchema={
                 "type": "object",
                 "properties": {},
@@ -680,8 +676,8 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="refresh_data",
             description="Refresh data from all or specific sources. Downloads new files from "
-                        "Skolinspektionen, fetches API data from Kolada, and updates the local cache. "
-                        "Use this to ensure data is up-to-date.",
+            "Skolinspektionen, fetches API data from Kolada, and updates the local cache. "
+            "Use this to ensure data is up-to-date.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -689,7 +685,13 @@ async def list_tools() -> list[Tool]:
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "enum": ["publications", "skolenkaten", "tillstand", "tillsyn", "kolada"],
+                            "enum": [
+                                "publications",
+                                "skolenkaten",
+                                "tillstand",
+                                "tillsyn",
+                                "kolada",
+                            ],
                         },
                         "description": "List of sources to refresh. Leave empty for all sources.",
                     },
@@ -704,7 +706,7 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="get_refresh_status",
             description="Get the current status of data refresh operations, including last refresh "
-                        "times for each source and recent refresh history.",
+            "times for each source and recent refresh history.",
             inputSchema={
                 "type": "object",
                 "properties": {},
@@ -758,11 +760,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             TextContent(
                 type="text",
                 text=json.dumps(
-                    {
-                        "themes": [
-                            {"key": k, "name": v} for k, v in THEMES.items()
-                        ]
-                    },
+                    {"themes": [{"key": k, "name": v} for k, v in THEMES.items()]},
                     ensure_ascii=False,
                     indent=2,
                 ),
@@ -774,11 +772,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             TextContent(
                 type="text",
                 text=json.dumps(
-                    {
-                        "skolformer": [
-                            {"key": k, "name": v} for k, v in SKOLFORMER.items()
-                        ]
-                    },
+                    {"skolformer": [{"key": k, "name": v} for k, v in SKOLFORMER.items()]},
                     ensure_ascii=False,
                     indent=2,
                 ),
@@ -790,11 +784,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             TextContent(
                 type="text",
                 text=json.dumps(
-                    {
-                        "subjects": [
-                            {"key": k, "name": v} for k, v in SUBJECTS.items()
-                        ]
-                    },
+                    {"subjects": [{"key": k, "name": v} for k, v in SUBJECTS.items()]},
                     ensure_ascii=False,
                     indent=2,
                 ),
@@ -806,11 +796,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             TextContent(
                 type="text",
                 text=json.dumps(
-                    {
-                        "decision_types": [
-                            {"key": k, "name": v} for k, v in DECISION_TYPES.items()
-                        ]
-                    },
+                    {"decision_types": [{"key": k, "name": v} for k, v in DECISION_TYPES.items()]},
                     ensure_ascii=False,
                     indent=2,
                 ),
@@ -822,11 +808,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             TextContent(
                 type="text",
                 text=json.dumps(
-                    {
-                        "regions": [
-                            {"key": k, "name": v} for k, v in REGIONS.items()
-                        ]
-                    },
+                    {"regions": [{"key": k, "name": v} for k, v in REGIONS.items()]},
                     ensure_ascii=False,
                     indent=2,
                 ),
@@ -859,8 +841,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 text=json.dumps(
                     {
                         "respondent_types": [
-                            {"key": k, "name": v}
-                            for k, v in SKOLENKATEN_RESPONDENT_TYPES.items()
+                            {"key": k, "name": v} for k, v in SKOLENKATEN_RESPONDENT_TYPES.items()
                         ]
                     },
                     ensure_ascii=False,
@@ -907,9 +888,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 type="text",
                 text=json.dumps(
                     {
-                        "education_kpis": [
-                            {"id": k, "description": v} for k, v in kpis.items()
-                        ],
+                        "education_kpis": [{"id": k, "description": v} for k, v in kpis.items()],
                         "usage": "Use these KPI IDs with get_kolada_education_stats or compare_kolada_municipalities",
                     },
                     ensure_ascii=False,
@@ -932,16 +911,13 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 text=json.dumps(
                     {
                         "beslut_types": [
-                            {"key": k, "name": v}
-                            for k, v in TILLSTAND_BESLUT_TYPES.items()
+                            {"key": k, "name": v} for k, v in TILLSTAND_BESLUT_TYPES.items()
                         ],
                         "ansokningstyper": [
-                            {"key": k, "name": v}
-                            for k, v in TILLSTAND_ANSOKNINGSTYPER.items()
+                            {"key": k, "name": v} for k, v in TILLSTAND_ANSOKNINGSTYPER.items()
                         ],
                         "skolformer": [
-                            {"key": k, "name": v}
-                            for k, v in TILLSTAND_SKOLFORMER.items()
+                            {"key": k, "name": v} for k, v in TILLSTAND_SKOLFORMER.items()
                         ],
                     },
                     ensure_ascii=False,
@@ -973,12 +949,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 text=json.dumps(
                     {
                         "tillsyn_categories": [
-                            {"key": k, "name": v}
-                            for k, v in TILLSYN_CATEGORIES.items()
+                            {"key": k, "name": v} for k, v in TILLSYN_CATEGORIES.items()
                         ],
                         "tui_assessment_areas": [
-                            {"key": k, "name": v}
-                            for k, v in TUI_ASSESSMENT_AREAS.items()
+                            {"key": k, "name": v} for k, v in TUI_ASSESSMENT_AREAS.items()
                         ],
                     },
                     ensure_ascii=False,
@@ -1049,9 +1023,7 @@ async def _search_publications(args: dict) -> list[TextContent]:
         if type_filter:
             filtered = [p for p in filtered if p.type == type_filter]
         if year_filter:
-            filtered = [
-                p for p in filtered if p.published and p.published.year == year_filter
-            ]
+            filtered = [p for p in filtered if p.published and p.published.year == year_filter]
 
         formatted = [
             {
@@ -1126,9 +1098,7 @@ async def _search_press_releases(args: dict) -> list[TextContent]:
     else:
         releases = index.press_releases
         if year_filter:
-            releases = [
-                r for r in releases if r.published and r.published.year == year_filter
-            ]
+            releases = [r for r in releases if r.published and r.published.year == year_filter]
 
         formatted = [
             {
@@ -1166,9 +1136,7 @@ async def _get_publication_content(args: dict) -> list[TextContent]:
     content = await parser.fetch_publication_content(url)
 
     if not content:
-        return [
-            TextContent(type="text", text=f"Error: Could not fetch content from {url}")
-        ]
+        return [TextContent(type="text", text=f"Error: Could not fetch content from {url}")]
 
     # Format as readable output
     output = f"# {content['title']}\n\n"
@@ -1280,7 +1248,7 @@ async def _refresh_index(args: dict) -> list[TextContent]:
     """Refresh the publication index."""
     global _index
 
-    max_pages = args.get("max_pages", 10)
+    args.get("max_pages", 10)
 
     async with PublicationScraper() as scraper:
         _index = await scraper.build_index()
@@ -1398,8 +1366,16 @@ def _get_skolenkaten_data_dir() -> Path:
     """Get the directory containing Skolenkäten Excel files."""
     # First check for local downloaded website data
     local_paths = [
-        Path.home() / "Desktop" / "www.skolinspektionen.se" / "globalassets" / "02-beslut-rapporter-stat" / "statistik" / "statistik-skolenkaten",
-        Path("/Users/isak/Desktop/www.skolinspektionen.se/globalassets/02-beslut-rapporter-stat/statistik/statistik-skolenkaten"),
+        Path.home()
+        / "Desktop"
+        / "www.skolinspektionen.se"
+        / "globalassets"
+        / "02-beslut-rapporter-stat"
+        / "statistik"
+        / "statistik-skolenkaten",
+        Path(
+            "/Users/isak/Desktop/www.skolinspektionen.se/globalassets/02-beslut-rapporter-stat/statistik/statistik-skolenkaten"
+        ),
     ]
     for p in local_paths:
         if p.exists():
@@ -1429,11 +1405,13 @@ async def _load_skolenkaten_data(
     # Filter files by year if specified
     if year:
         from ..services.skolenkaten import parse_year_from_path
+
         files = [f for f in files if parse_year_from_path(f) == year]
 
     # Filter by respondent type if specified
     if respondent_type:
         from ..services.skolenkaten import parse_respondent_type
+
         files = [f for f in files if parse_respondent_type(f.name)[0] == respondent_type]
 
     results = []
@@ -1454,7 +1432,9 @@ async def _search_skolenkaten(args: dict) -> list[TextContent]:
     query = validate_string(args.get("query"), max_length=200, default="")
     kommun = validate_string(args.get("kommun"), max_length=100, default=None) or None
     huvudman = validate_string(args.get("huvudman"), max_length=200, default=None) or None
-    respondent_type = validate_enum(args.get("respondent_type"), set(SKOLENKATEN_RESPONDENT_TYPES.keys()))
+    respondent_type = validate_enum(
+        args.get("respondent_type"), set(SKOLENKATEN_RESPONDENT_TYPES.keys())
+    )
     year = validate_year(args.get("year"))
     limit = validate_limit(args.get("limit"), default=20)
 
@@ -1485,32 +1465,36 @@ async def _search_skolenkaten(args: dict) -> list[TextContent]:
     # Format results
     formatted = []
     for r in filtered[:limit]:
-        formatted.append({
-            "skolenhet": r.skolenhet,
-            "skolenhetskod": r.skolenhetskod,
-            "huvudman": r.huvudman,
-            "kommun": r.kommun,
-            "year": r.year,
-            "term": r.term,
-            "respondent_type": r.respondent_type,
-            "respondent_type_name": SKOLENKATEN_RESPONDENT_TYPES.get(r.respondent_type, r.respondent_type),
-            "antal_svar": r.antal_svar,
-            "svarsfrekvens": r.svarsfrekvens,
-            "indices": {
-                "information": r.index_information,
-                "stimulans": r.index_stimulans,
-                "stod": r.index_stod,
-                "kritiskt_tankande": r.index_kritiskt_tankande,
-                "bemotande_larare": r.index_bemotande_larare,
-                "bemotande_elever": r.index_bemotande_elever,
-                "inflytande": r.index_inflytande,
-                "studiero": r.index_studiero,
-                "trygghet": r.index_trygghet,
-                "forhindra_krankningar": r.index_forhindra_krankningar,
-                "elevhalsa": r.index_elevhalsa,
-                "nojdhet": r.index_nojdhet,
-            },
-        })
+        formatted.append(
+            {
+                "skolenhet": r.skolenhet,
+                "skolenhetskod": r.skolenhetskod,
+                "huvudman": r.huvudman,
+                "kommun": r.kommun,
+                "year": r.year,
+                "term": r.term,
+                "respondent_type": r.respondent_type,
+                "respondent_type_name": SKOLENKATEN_RESPONDENT_TYPES.get(
+                    r.respondent_type, r.respondent_type
+                ),
+                "antal_svar": r.antal_svar,
+                "svarsfrekvens": r.svarsfrekvens,
+                "indices": {
+                    "information": r.index_information,
+                    "stimulans": r.index_stimulans,
+                    "stod": r.index_stod,
+                    "kritiskt_tankande": r.index_kritiskt_tankande,
+                    "bemotande_larare": r.index_bemotande_larare,
+                    "bemotande_elever": r.index_bemotande_elever,
+                    "inflytande": r.index_inflytande,
+                    "studiero": r.index_studiero,
+                    "trygghet": r.index_trygghet,
+                    "forhindra_krankningar": r.index_forhindra_krankningar,
+                    "elevhalsa": r.index_elevhalsa,
+                    "nojdhet": r.index_nojdhet,
+                },
+            }
+        )
 
     return [
         TextContent(
@@ -1631,7 +1615,7 @@ async def _get_skolenkaten_summary(args: dict) -> list[TextContent]:
 
 async def _list_skolenkaten_files(args: dict) -> list[TextContent]:
     """List available Skolenkäten Excel files."""
-    from ..services.skolenkaten import parse_year_from_path, parse_respondent_type
+    from ..services.skolenkaten import parse_respondent_type, parse_year_from_path
 
     year_filter = args.get("year")
     data_dir = _get_skolenkaten_data_dir()
@@ -1664,12 +1648,14 @@ async def _list_skolenkaten_files(args: dict) -> list[TextContent]:
         if year not in by_year:
             by_year[year] = []
 
-        by_year[year].append({
-            "filename": f.name,
-            "respondent_type": resp_type,
-            "respondent_type_name": SKOLENKATEN_RESPONDENT_TYPES.get(resp_type, resp_type),
-            "skolform": skolform,
-        })
+        by_year[year].append(
+            {
+                "filename": f.name,
+                "respondent_type": resp_type,
+                "respondent_type_name": SKOLENKATEN_RESPONDENT_TYPES.get(resp_type, resp_type),
+                "skolform": skolform,
+            }
+        )
 
     return [
         TextContent(
@@ -1678,9 +1664,7 @@ async def _list_skolenkaten_files(args: dict) -> list[TextContent]:
                 {
                     "total_files": sum(len(v) for v in by_year.values()),
                     "years": sorted(by_year.keys(), reverse=True),
-                    "files_by_year": {
-                        str(k): v for k, v in sorted(by_year.items(), reverse=True)
-                    },
+                    "files_by_year": {str(k): v for k, v in sorted(by_year.items(), reverse=True)},
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -1802,8 +1786,16 @@ def _get_tillstand_data_dir() -> Path:
     """Get the directory containing Tillståndsbeslut Excel files."""
     # First check for local downloaded website data
     local_paths = [
-        Path.home() / "Desktop" / "www.skolinspektionen.se" / "globalassets" / "02-beslut-rapporter-stat" / "statistik" / "statistik-tillstand",
-        Path("/Users/isak/Desktop/www.skolinspektionen.se/globalassets/02-beslut-rapporter-stat/statistik/statistik-tillstand"),
+        Path.home()
+        / "Desktop"
+        / "www.skolinspektionen.se"
+        / "globalassets"
+        / "02-beslut-rapporter-stat"
+        / "statistik"
+        / "statistik-tillstand",
+        Path(
+            "/Users/isak/Desktop/www.skolinspektionen.se/globalassets/02-beslut-rapporter-stat/statistik/statistik-tillstand"
+        ),
     ]
     for p in local_paths:
         if p.exists():
@@ -1922,7 +1914,8 @@ async def _search_tillstand(args: dict) -> list[TextContent]:
                                 f"ak{i}": getattr(r, f"beslut_ak{i}")
                                 for i in range(1, 10)
                                 if getattr(r, f"beslut_ak{i}")
-                            } or None,
+                            }
+                            or None,
                             "gymnasie_programs": r.gymnasie_programs,
                         }
                         for r in filtered
@@ -1979,23 +1972,30 @@ async def _get_tillstand_summary(args: dict) -> list[TextContent]:
                     "godkannanden": summary.godkannanden,
                     "avslag": summary.avslag,
                     "avskrivningar": summary.avskrivningar,
-                    "approval_rate": round(
-                        summary.godkannanden / summary.total_decisions * 100, 1
-                    ) if summary.total_decisions > 0 else 0,
+                    "approval_rate": round(summary.godkannanden / summary.total_decisions * 100, 1)
+                    if summary.total_decisions > 0
+                    else 0,
                     "by_application_type": {
                         "nyetableringar": {
                             "total": summary.nyetableringar_total,
                             "godkanda": summary.nyetableringar_godkanda,
                             "approval_rate": round(
-                                summary.nyetableringar_godkanda / summary.nyetableringar_total * 100, 1
-                            ) if summary.nyetableringar_total > 0 else 0,
+                                summary.nyetableringar_godkanda
+                                / summary.nyetableringar_total
+                                * 100,
+                                1,
+                            )
+                            if summary.nyetableringar_total > 0
+                            else 0,
                         },
                         "utokningar": {
                             "total": summary.utokningar_total,
                             "godkanda": summary.utokningar_godkanda,
                             "approval_rate": round(
                                 summary.utokningar_godkanda / summary.utokningar_total * 100, 1
-                            ) if summary.utokningar_total > 0 else 0,
+                            )
+                            if summary.utokningar_total > 0
+                            else 0,
                         },
                     },
                     "by_skolform": summary.by_skolform,
@@ -2009,7 +2009,7 @@ async def _get_tillstand_summary(args: dict) -> list[TextContent]:
 
 async def _list_tillstand_files(args: dict) -> list[TextContent]:
     """List available Tillståndsbeslut Excel files."""
-    from ..services.tillstand import parse_year_from_path, parse_skolstart_from_path
+    from ..services.tillstand import parse_skolstart_from_path, parse_year_from_path
 
     year_filter = args.get("year")
     data_dir = _get_tillstand_data_dir()
@@ -2042,10 +2042,12 @@ async def _list_tillstand_files(args: dict) -> list[TextContent]:
         if year not in by_year:
             by_year[year] = []
 
-        by_year[year].append({
-            "filename": f.name,
-            "skolstart_lasar": skolstart,
-        })
+        by_year[year].append(
+            {
+                "filename": f.name,
+                "skolstart_lasar": skolstart,
+            }
+        )
 
     return [
         TextContent(
@@ -2054,9 +2056,7 @@ async def _list_tillstand_files(args: dict) -> list[TextContent]:
                 {
                     "total_files": sum(len(v) for v in by_year.values()),
                     "years": sorted(by_year.keys(), reverse=True),
-                    "files_by_year": {
-                        str(k): v for k, v in sorted(by_year.items(), reverse=True)
-                    },
+                    "files_by_year": {str(k): v for k, v in sorted(by_year.items(), reverse=True)},
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -2073,8 +2073,15 @@ def _get_tillsyn_data_dir() -> Path:
     # First check for local downloaded website data
     # Files are in /statistik/ not /statistikrapporter/
     local_paths = [
-        Path.home() / "Desktop" / "www.skolinspektionen.se" / "globalassets" / "02-beslut-rapporter-stat" / "statistik",
-        Path("/Users/isak/Desktop/www.skolinspektionen.se/globalassets/02-beslut-rapporter-stat/statistik"),
+        Path.home()
+        / "Desktop"
+        / "www.skolinspektionen.se"
+        / "globalassets"
+        / "02-beslut-rapporter-stat"
+        / "statistik",
+        Path(
+            "/Users/isak/Desktop/www.skolinspektionen.se/globalassets/02-beslut-rapporter-stat/statistik"
+        ),
     ]
     for p in local_paths:
         if p.exists():
@@ -2199,7 +2206,9 @@ async def _get_tui_statistik(args: dict) -> list[TextContent]:
                             "beslut": {
                                 "totalt": t.beslut_totalt,
                                 "med_brist": t.beslut_med_brist,
-                                "andel_med_brist": round(t.andel_med_brist, 1) if t.andel_med_brist else None,
+                                "andel_med_brist": round(t.andel_med_brist, 1)
+                                if t.andel_med_brist
+                                else None,
                             },
                             "by_huvudman": {
                                 "enskild": {
@@ -2269,7 +2278,9 @@ async def _get_planerad_tillsyn_statistik(args: dict) -> list[TextContent]:
                 {
                     "description": "Planerad Tillsyn (planned supervision) statistics. Regular scheduled inspections of schools.",
                     "count": len(pt),
-                    "years_available": sorted(set(p.year for p in summary.planerad_tillsyn), reverse=True),
+                    "years_available": sorted(
+                        set(p.year for p in summary.planerad_tillsyn), reverse=True
+                    ),
                     "filter_year": year,
                     "data": [
                         {
@@ -2277,7 +2288,9 @@ async def _get_planerad_tillsyn_statistik(args: dict) -> list[TextContent]:
                             "beslut": {
                                 "totalt": p.beslut_totalt,
                                 "med_brist": p.beslut_med_brist,
-                                "andel_med_brist": round(p.andel_med_brist, 1) if p.andel_med_brist else None,
+                                "andel_med_brist": round(p.andel_med_brist, 1)
+                                if p.andel_med_brist
+                                else None,
                             },
                             "by_huvudman": {
                                 "enskild": {
@@ -2346,26 +2359,40 @@ async def _get_tillsyn_summary(args: dict) -> list[TextContent]:
                         "years_with_data": sorted(set(t.year for t in summary.tui), reverse=True),
                         "total_beslut": total_tui_beslut,
                         "total_med_brist": total_tui_med_brist,
-                        "average_brist_rate": round(total_tui_med_brist / total_tui_beslut * 100, 1) if total_tui_beslut > 0 else 0,
+                        "average_brist_rate": round(total_tui_med_brist / total_tui_beslut * 100, 1)
+                        if total_tui_beslut > 0
+                        else 0,
                         "latest_year": {
                             "year": summary.tui[0].year,
                             "beslut_totalt": summary.tui[0].beslut_totalt,
                             "beslut_med_brist": summary.tui[0].beslut_med_brist,
-                            "andel_med_brist": round(summary.tui[0].andel_med_brist, 1) if summary.tui[0].andel_med_brist else None,
-                        } if summary.tui else None,
+                            "andel_med_brist": round(summary.tui[0].andel_med_brist, 1)
+                            if summary.tui[0].andel_med_brist
+                            else None,
+                        }
+                        if summary.tui
+                        else None,
                     },
                     "planerad_tillsyn": {
                         "description": "Planned regular supervision inspections",
-                        "years_with_data": sorted(set(p.year for p in summary.planerad_tillsyn), reverse=True),
+                        "years_with_data": sorted(
+                            set(p.year for p in summary.planerad_tillsyn), reverse=True
+                        ),
                         "total_beslut": total_pt_beslut,
                         "total_med_brist": total_pt_med_brist,
-                        "average_brist_rate": round(total_pt_med_brist / total_pt_beslut * 100, 1) if total_pt_beslut > 0 else 0,
+                        "average_brist_rate": round(total_pt_med_brist / total_pt_beslut * 100, 1)
+                        if total_pt_beslut > 0
+                        else 0,
                         "latest_year": {
                             "year": summary.planerad_tillsyn[0].year,
                             "beslut_totalt": summary.planerad_tillsyn[0].beslut_totalt,
                             "beslut_med_brist": summary.planerad_tillsyn[0].beslut_med_brist,
-                            "andel_med_brist": round(summary.planerad_tillsyn[0].andel_med_brist, 1) if summary.planerad_tillsyn[0].andel_med_brist else None,
-                        } if summary.planerad_tillsyn else None,
+                            "andel_med_brist": round(summary.planerad_tillsyn[0].andel_med_brist, 1)
+                            if summary.planerad_tillsyn[0].andel_med_brist
+                            else None,
+                        }
+                        if summary.planerad_tillsyn
+                        else None,
                     },
                 },
                 ensure_ascii=False,
@@ -2409,7 +2436,7 @@ def _handle_ombedomning_reports(args: dict) -> list[TextContent]:
             text=json.dumps(
                 {
                     "description": "Ombedömning nationella prov - reports on re-evaluation of national tests "
-                                   "to assess grading consistency across Sweden",
+                    "to assess grading consistency across Sweden",
                     "note": "Data is only available as PDF reports, not structured Excel data",
                     "total_reports": len(reports),
                     "reports": [
@@ -2446,8 +2473,8 @@ def _handle_ombedomning_summary() -> list[TextContent]:
                 {
                     "description": "Summary of Skolinspektionen's ombedömning nationella prov program",
                     "about": "Ombedömning is when Skolinspektionen re-grades a sample of national tests "
-                             "to assess consistency in grading across Sweden. Results typically show "
-                             "significant variations in how teachers grade compared to external assessors.",
+                    "to assess consistency in grading across Sweden. Results typically show "
+                    "significant variations in how teachers grade compared to external assessors.",
                     "data_format": "PDF reports only (no structured Excel data available)",
                     "total_reports": summary.total_reports,
                     "years_available": summary.years_available,
@@ -2457,7 +2484,9 @@ def _handle_ombedomning_summary() -> list[TextContent]:
                         "year": latest.year,
                         "url": latest.url,
                         "description": latest.description,
-                    } if latest else None,
+                    }
+                    if latest
+                    else None,
                     "key_findings": [
                         "National tests show significant variation in grading between schools",
                         "Teacher grades often differ from external assessor grades",
@@ -2753,8 +2782,7 @@ async def read_resource(uri: str) -> str:
         return json.dumps(
             {
                 "respondent_types": [
-                    {"key": k, "name": v}
-                    for k, v in SKOLENKATEN_RESPONDENT_TYPES.items()
+                    {"key": k, "name": v} for k, v in SKOLENKATEN_RESPONDENT_TYPES.items()
                 ]
             },
             ensure_ascii=False,
@@ -2765,8 +2793,7 @@ async def read_resource(uri: str) -> str:
         return json.dumps(
             {
                 "indices": [
-                    {"key": k, "name": v, "scale": "1-10"}
-                    for k, v in SKOLENKATEN_INDEX.items()
+                    {"key": k, "name": v, "scale": "1-10"} for k, v in SKOLENKATEN_INDEX.items()
                 ],
                 "description": "Index scores range from 1-10, where higher is better",
             },

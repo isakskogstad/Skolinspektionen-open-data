@@ -1,6 +1,5 @@
 """Tests for browser module."""
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -331,9 +330,7 @@ class TestIsJavascriptRequired:
     @pytest.mark.asyncio
     async def test_skolinspektionen_no_js(self):
         """Test that skolinspektionen doesn't require JS by default."""
-        result = await is_javascript_required(
-            "https://www.skolinspektionen.se/publikation"
-        )
+        result = await is_javascript_required("https://www.skolinspektionen.se/publikation")
         assert result is False
 
 
@@ -379,14 +376,11 @@ class TestContextManager:
         mock_camoufox_instance.__aenter__.return_value = mock_browser
         mock_camoufox_instance.__aexit__.return_value = None
 
-        mock_camoufox_class = MagicMock(return_value=mock_camoufox_instance)
+        MagicMock(return_value=mock_camoufox_instance)
 
         with patch(
             "src.services.browser.BrowserScraper.__aenter__",
-            new=AsyncMock(
-                side_effect=lambda self: setattr(self, "_browser", mock_browser)
-                or self
-            ),
+            new=AsyncMock(side_effect=lambda self: setattr(self, "_browser", mock_browser) or self),
         ):
             scraper = BrowserScraper()
             # Manually set up as if context manager worked

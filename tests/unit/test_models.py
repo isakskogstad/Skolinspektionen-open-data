@@ -2,16 +2,14 @@
 
 from datetime import date
 
-import pytest
-
 from src.services.models import (
+    PUBLICATION_TYPES,
+    THEMES,
     Attachment,
     Index,
     PressRelease,
     Publication,
     StatisticsFile,
-    PUBLICATION_TYPES,
-    THEMES,
 )
 
 

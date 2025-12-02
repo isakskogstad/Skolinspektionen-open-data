@@ -67,6 +67,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+ignore = ["E501"]  # Ignore line-too-long - many tool descriptions exceed 100 chars
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -75,9 +75,7 @@ class TokenBucket:
                 # Calculate wait time needed
                 deficit = tokens - self.tokens
                 wait_time = deficit / self.rate
-                console.print(
-                    f"[dim]Rate limiter '{self.name}': waiting {wait_time:.2f}s[/dim]"
-                )
+                console.print(f"[dim]Rate limiter '{self.name}': waiting {wait_time:.2f}s[/dim]")
                 await asyncio.sleep(wait_time)
                 self._add_tokens()
 

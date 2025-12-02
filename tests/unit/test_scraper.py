@@ -1,7 +1,6 @@
 """Tests for scraper module."""
 
 import pytest
-import respx
 from bs4 import BeautifulSoup
 from httpx import Response
 
@@ -33,9 +32,7 @@ class TestPublicationScraper:
     @pytest.mark.asyncio
     async def test_fetch_page_not_found(self, test_settings: Settings, respx_mock):
         """Test handling of 404 response."""
-        respx_mock.get("https://www.skolinspektionen.se/notfound").mock(
-            return_value=Response(404)
-        )
+        respx_mock.get("https://www.skolinspektionen.se/notfound").mock(return_value=Response(404))
 
         async with PublicationScraper(
             timeout=test_settings.http_timeout,
@@ -48,9 +45,7 @@ class TestPublicationScraper:
     @pytest.mark.asyncio
     async def test_fetch_page_server_error(self, test_settings: Settings, respx_mock):
         """Test handling of server error."""
-        respx_mock.get("https://www.skolinspektionen.se/error").mock(
-            return_value=Response(500)
-        )
+        respx_mock.get("https://www.skolinspektionen.se/error").mock(return_value=Response(500))
 
         async with PublicationScraper(
             timeout=test_settings.http_timeout,
@@ -81,9 +76,7 @@ class TestPublicationScraper:
 class TestPublicationParsing:
     """Tests for publication parsing."""
 
-    def test_parse_publication_list(
-        self, test_settings: Settings, mock_html_publication_list: str
-    ):
+    def test_parse_publication_list(self, test_settings: Settings, mock_html_publication_list: str):
         """Test parsing publication list HTML."""
         scraper = PublicationScraper(
             timeout=test_settings.http_timeout,
@@ -109,9 +102,7 @@ class TestPublicationParsing:
         publications = scraper._parse_publication_list(soup)
         assert publications == []
 
-    def test_parse_date_extraction(
-        self, test_settings: Settings, mock_html_publication_list: str
-    ):
+    def test_parse_date_extraction(self, test_settings: Settings, mock_html_publication_list: str):
         """Test date extraction from publication list."""
         scraper = PublicationScraper(
             timeout=test_settings.http_timeout,
@@ -164,9 +155,7 @@ class TestScraperWithCache:
         url = "https://www.skolinspektionen.se/cached"
 
         # Mock returns content
-        respx_mock.get(url).mock(
-            return_value=Response(200, text=mock_html_publication_list)
-        )
+        respx_mock.get(url).mock(return_value=Response(200, text=mock_html_publication_list))
 
         async with PublicationScraper(
             timeout=test_settings.http_timeout,

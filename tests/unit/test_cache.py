@@ -1,7 +1,6 @@
 """Tests for caching module."""
 
 import asyncio
-import json
 from pathlib import Path
 
 import pytest
@@ -235,7 +234,7 @@ class TestGetContentCache:
 
     def test_reset(self):
         """Test that reset_content_cache works."""
-        cache1 = get_content_cache()
+        get_content_cache()
         reset_content_cache()
         cache2 = get_content_cache()
         # After reset, should have a new instance

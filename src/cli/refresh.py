@@ -90,7 +90,9 @@ def print_result(result):
     print("\n--- Source Results ---")
     for source, sr in result.sources.items():
         status = "✓" if sr.status.value == "success" else "✗"
-        print(f"  {status} {source:15} | {sr.items_parsed:6} items | {sr.duration_seconds or 0:.1f}s")
+        print(
+            f"  {status} {source:15} | {sr.items_parsed:6} items | {sr.duration_seconds or 0:.1f}s"
+        )
         if sr.errors:
             for error in sr.errors[:3]:
                 print(f"      Error: {error[:80]}")
@@ -182,7 +184,8 @@ def cli_main():
     )
 
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Enable verbose logging",
     )

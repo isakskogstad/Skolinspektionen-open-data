@@ -7,31 +7,30 @@ import asyncio
 import json
 import re
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 from urllib.parse import urljoin, urlparse, urlunparse
 
 import httpx
 from bs4 import BeautifulSoup
 from rich.console import Console
-from rich.progress import Progress, TaskID
+from rich.progress import Progress
 
 from ..config import get_settings
 from .cache import get_content_cache
 from .delta import DeltaTracker
 from .models import (
+    PUBLICATION_TYPES,
+    SKOLFORMER,
+    SUBJECTS,
+    THEMES,
     Attachment,
     Index,
     PressRelease,
     Publication,
     StatisticsFile,
-    PUBLICATION_TYPES,
-    SKOLFORMER,
-    THEMES,
-    SUBJECTS,
 )
 from .rate_limiter import extract_domain, get_rate_limiter
-from .retry import CircuitBreaker, with_retry, RetryConfig
+from .retry import CircuitBreaker, with_retry
 
 console = Console()
 
@@ -161,9 +160,7 @@ class PublicationScraper:
             if first_html:
                 total_online = self._extract_total_count(first_html)
                 if total_online:
-                    delta = self.delta_tracker.calculate_delta(
-                        "publications", total_online
-                    )
+                    delta = self.delta_tracker.calculate_delta("publications", total_online)
                     console.print(f"[cyan]{delta.description}[/cyan]")
 
                     # Adjust max_pages based on delta
@@ -329,7 +326,7 @@ class PublicationScraper:
         - Text content of the item
         """
         found = []
-        item_text = item.get_text().lower()
+        item.get_text().lower()
 
         # Check links for taxonomy slugs
         for link in item.select("a"):
@@ -588,7 +585,9 @@ async def _async_main():
 
         # Print cache stats
         cache_stats = await scraper.get_cache_stats()
-        console.print(f"[dim]Cache stats: {cache_stats.get('memory', {}).get('size', 0)} items in memory[/dim]")
+        console.print(
+            f"[dim]Cache stats: {cache_stats.get('memory', {}).get('size', 0)} items in memory[/dim]"
+        )
 
 
 def main():

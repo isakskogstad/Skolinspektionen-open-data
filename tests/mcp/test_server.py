@@ -1,21 +1,18 @@
 """Tests for MCP server functionality."""
 
 import json
-from datetime import date
 from pathlib import Path
-from unittest.mock import AsyncMock, patch, MagicMock
-from dataclasses import dataclass
-from typing import Any, Optional
+from unittest.mock import patch
 
 import pytest
 
 from src.services.models import (
-    Index,
-    Publication,
-    PressRelease,
-    StatisticsFile,
     PUBLICATION_TYPES,
     THEMES,
+    Index,
+    PressRelease,
+    Publication,
+    StatisticsFile,
 )
 
 
@@ -138,9 +135,7 @@ class TestLoadIndex:
         # Create index file
         index_path = temp_dir / "api" / "index.json"
         index_path.parent.mkdir(parents=True, exist_ok=True)
-        index_path.write_text(
-            json.dumps(sample_index.model_dump(mode="json"), ensure_ascii=False)
-        )
+        index_path.write_text(json.dumps(sample_index.model_dump(mode="json"), ensure_ascii=False))
 
         # Patch get_settings to return our temp path
         with patch("src.mcp.server.get_settings") as mock_settings:
@@ -199,9 +194,7 @@ class TestSearchPublicationsHandler:
     """Tests for _search_publications handler."""
 
     @pytest.mark.asyncio
-    async def test_search_with_query(
-        self, temp_dir: Path, sample_publications: list[Publication]
-    ):
+    async def test_search_with_query(self, temp_dir: Path, sample_publications: list[Publication]):
         """Test searching publications with query."""
         import src.mcp.server as server_module
 
@@ -247,9 +240,7 @@ class TestSearchPublicationsHandler:
         server_module._index = None
 
     @pytest.mark.asyncio
-    async def test_search_with_type_filter(
-        self, sample_publications: list[Publication]
-    ):
+    async def test_search_with_type_filter(self, sample_publications: list[Publication]):
         """Test filtering by publication type."""
         import src.mcp.server as server_module
 
@@ -321,9 +312,7 @@ class TestGetStatisticsFilesHandler:
         server_module._index = None
 
     @pytest.mark.asyncio
-    async def test_get_statistics_files_with_filters(
-        self, sample_statistics_file: StatisticsFile
-    ):
+    async def test_get_statistics_files_with_filters(self, sample_statistics_file: StatisticsFile):
         """Test getting statistics files with filters."""
         import src.mcp.server as server_module
 

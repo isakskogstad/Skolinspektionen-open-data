@@ -253,7 +253,7 @@ async def is_javascript_required(url: str) -> bool:
     Returns:
         True if JavaScript rendering is likely needed
     """
-    settings = get_settings()
+    get_settings()
 
     # Known JavaScript-heavy domains/patterns
     js_patterns = [
